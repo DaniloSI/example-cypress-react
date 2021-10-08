@@ -14,10 +14,10 @@ import { Todo } from "./models/Todo";
 
 interface ITodoListProps {
   todos: Todo[];
-  handleCheck: (id: string) => void;
-  handleDelete: (id: string) => void;
-  handleUp: (id: string) => void;
-  handleDown: (id: string) => void;
+  handleCheck: (index: number) => void;
+  handleDelete: (index: number) => void;
+  handleUp: (index: number) => void;
+  handleDown: (index: number) => void;
 }
 
 const TodoList: React.FC<ITodoListProps> = ({
@@ -31,26 +31,23 @@ const TodoList: React.FC<ITodoListProps> = ({
     <List
       sx={{ width: "100%", bgcolor: "background.paper", marginTop: "32px" }}
     >
-      {todos.map((todo) => {
-        const labelId = `checkbox-list-label-${todo.id}`;
+      {todos.map((todo, index) => {
+        const labelId = `checkbox-list-label-${index}`;
 
         return (
           <ListItem
-            key={todo.id}
+            key={index}
             secondaryAction={
               <ButtonGroup aria-label="text button group">
-                <IconButton aria-label="up" onClick={() => handleUp(todo.id)}>
+                <IconButton aria-label="up" onClick={() => handleUp(index)}>
                   <ArrowUpward color="action" />
                 </IconButton>
-                <IconButton
-                  aria-label="down"
-                  onClick={() => handleDown(todo.id)}
-                >
+                <IconButton aria-label="down" onClick={() => handleDown(index)}>
                   <ArrowDownward color="action" />
                 </IconButton>
                 <IconButton
                   aria-label="delete"
-                  onClick={() => handleDelete(todo.id)}
+                  onClick={() => handleDelete(index)}
                 >
                   <DeleteForever color="error" />
                 </IconButton>
@@ -60,7 +57,7 @@ const TodoList: React.FC<ITodoListProps> = ({
           >
             <ListItemButton
               role={undefined}
-              onClick={() => handleCheck(todo.id)}
+              onClick={() => handleCheck(index)}
               dense
             >
               <ListItemIcon>
@@ -70,7 +67,12 @@ const TodoList: React.FC<ITodoListProps> = ({
                   checked={todo.done}
                   tabIndex={-1}
                   disableRipple
-                  inputProps={{ "aria-labelledby": labelId }}
+                  inputProps={
+                    {
+                      "data-cy": "done",
+                      "aria-labelledby": labelId,
+                    } as any
+                  }
                 />
               </ListItemIcon>
               <ListItemText

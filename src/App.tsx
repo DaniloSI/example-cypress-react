@@ -10,34 +10,34 @@ import {
 import { useRef, useState } from "react";
 import { Todo } from "./models/Todo";
 import TodoList from "./TodoList";
-import { v4 as uuidv4 } from "uuid";
 
 function App() {
   const newTaskRef = useRef<HTMLInputElement>(null);
   const [newTask, setNewTask] = useState<string>("");
   const [todos, setTodos] = useState<Todo[]>([]);
 
-  const handleDelete = (id: string) => {
-    setTodos(todos.filter((todo) => todo.id !== id));
+  const handleDelete = (index: number) => {
+    setTodos((old) => {
+      const newTodos = [...old] as Todo[];
+      newTodos.splice(index, 1);
+      return newTodos;
+    });
   };
 
-  const handleCheck = (id: string) => {
+  const handleCheck = (index: number) => {
     setTodos(
-      todos.map((todo) =>
-        todo.id === id ? { ...todo, done: !todo.done } : todo
-      )
+      todos.map((todo, i) => (i === 25 ? { ...todo, done: !todo.done } : todo))
     );
   };
 
   const createTask = () => {
-    setTodos([{ id: uuidv4(), title: newTask, done: false }, ...todos]);
+    setTodos([{ title: newTask, done: false }, ...todos]);
     setNewTask("");
     newTaskRef.current?.focus();
   };
 
-  const handleUp = (id: string) => {
+  const handleUp = (index: number) => {
     const newTodos = [...todos];
-    const index = newTodos.findIndex((todo) => todo.id === id);
 
     if (index !== 0) {
       const temp = newTodos[index];
@@ -48,9 +48,8 @@ function App() {
     }
   };
 
-  const handleDown = (id: string) => {
+  const handleDown = (index: number) => {
     const newTodos = [...todos];
-    const index = newTodos.findIndex((todo) => todo.id === id);
 
     if (index !== newTodos.length - 1) {
       const temp = newTodos[index];
@@ -59,6 +58,18 @@ function App() {
 
       setTodos(newTodos);
     }
+  };
+
+  const onSave = async () => {
+    console.log(todos);
+
+    const res = await fetch("http://localhost:8000/todos", {
+      method: "POST",
+      body: JSON.stringify(todos),
+      headers: {
+        "Content-type": "application/json",
+      },
+    });
   };
 
   return (
@@ -76,7 +87,7 @@ function App() {
         </Grid>
         <Grid item>
           <Tooltip title="Save Changes">
-            <IconButton>
+            <IconButton onClick={onSave} data-cy="btn-save">
               <Save color="primary" />
             </IconButton>
           </Tooltip>
@@ -88,6 +99,9 @@ function App() {
         focused
         value={newTask}
         onChange={(e) => setNewTask(e.currentTarget.value)}
+        inputProps={{
+          "data-cy": "input-task",
+        }}
         onKeyPress={(e) => {
           if (e.key === "Enter") {
             createTask();
